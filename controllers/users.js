@@ -21,7 +21,12 @@ module.exports.getUser = (req, res) => {
       }
       res.status(200).send({ user });
     })
-    .catch(() => res.status(500).send({ message: 'Ошибка' }));
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        res.status(400).send({ message: 'Переданные данные некорректны' });
+      }
+      res.status(500).send({ message: 'Ошибка' });
+    });
 };
 
 module.exports.createUser = (req, res) => {
