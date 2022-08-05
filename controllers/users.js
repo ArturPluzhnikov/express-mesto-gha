@@ -24,6 +24,7 @@ module.exports.getUser = (req, res) => {
     .catch((err) => {
       if (err.name === 'CastError') {
         res.status(400).send({ message: 'Переданные данные некорректны' });
+        return;
       }
       res.status(500).send({ message: 'Ошибка' });
     });
@@ -51,9 +52,15 @@ module.exports.updateUser = (req, res) => {
         res.status(404).send({ message: 'По данному запросу пользователи не найдены' });
         return;
       }
-      res.status(200).send(user);
+      res.status(200).send({ user });
     })
-    .catch(() => res.status(500).send({ message: 'Ошибка' }));
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(400).send({ message: 'Переданные данные некорректны' });
+        return;
+      }
+      res.status(500).send({ message: 'Ошибка' });
+    });
 };
 
 module.exports.setAvatar = (req, res) => {
@@ -65,7 +72,13 @@ module.exports.setAvatar = (req, res) => {
         res.status(404).send({ message: 'По данному запросу пользователи не найдены' });
         return;
       }
-      res.status(200).send(user);
+      res.status(200).send({ user });
     })
-    .catch(() => res.status(500).send({ message: 'Ошибка' }));
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(400).send({ message: 'Переданные данные некорректны' });
+        return;
+      }
+      res.status(500).send({ message: 'Ошибка' });
+    });
 };
