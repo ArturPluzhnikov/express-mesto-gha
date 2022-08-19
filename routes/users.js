@@ -2,11 +2,13 @@ const router = require('express').Router();
 const { celebrate, Joi } = require('celebrate');
 const validator = require('validator');
 const {
-  getAllUsers, getUser, updateUser, setAvatar,
+  getAllUsers, getUser, updateUser, setAvatar, getCurrentUser,
 } = require('../controllers/users');
 const BadRequest = require('../errors/BadRequest');
 
 router.get('/users', getAllUsers);
+
+router.get('/users/me', getCurrentUser);
 
 router.get('/users/:userId', celebrate({
   params: Joi.object().keys({
@@ -16,8 +18,6 @@ router.get('/users/:userId', celebrate({
       .required(),
   }),
 }), getUser);
-
-router.get('/users/me', getUser);
 
 router.patch('/users/me', celebrate({
   body: Joi.object().keys({

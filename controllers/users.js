@@ -4,14 +4,10 @@ const User = require('../models/user');
 const BadRequest = require('../errors/BadRequest');
 const Conflict = require('../errors/Conflict');
 const NotFound = require('../errors/NotFound');
-const Unauthorized = require('../errors/Unauthorized');
 
 module.exports.getAllUsers = (req, res, next) => {
   User.find({})
     .then((users) => {
-      if (users.length === 0) {
-        throw new NotFound('По данному запросу пользователи не найдены');
-      }
       res.status(200).send({ users });
     })
     .catch(next);
@@ -34,6 +30,17 @@ module.exports.getUser = (req, res, next) => {
     });
 };
 
+module.exports.getCurrentUser = (req, res, next) => {
+  User.findById(req.user._id)
+    .then((user) => {
+      if (!user) {
+        throw new NotFound('По данному запросу пользователи не найдены');
+      }
+      res.status(200).send({ user });
+    })
+    .catch(next);
+};
+
 module.exports.createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
@@ -43,10 +50,14 @@ module.exports.createUser = (req, res, next) => {
     .then((hash) => User.create({
       name, about, avatar, email, password: hash,
     }))
-    .then((user) => res.status(200).send({ user }))
+    .then(() => res.status(200).send({
+      data: {
+        name, about, avatar, email,
+      },
+    }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        next(new BadRequest('Переданные данные некорректны'));
+        return next(new BadRequest('Переданные данные некорректны'));
       }
       if (err.code === 11000) {
         next(new Conflict('Такой пользователь уже существует'));
@@ -101,11 +112,5 @@ module.exports.login = (req, res, next) => {
       const token = jwt.sign({ _id: user._id }, 'my-secret-key', { expiresIn: '7d' });
       res.send({ token });
     })
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        next(new Unauthorized('Неправильный логин или пароль'));
-      } else {
-        next(err);
-      }
-    });
+    .catch(next);
 };

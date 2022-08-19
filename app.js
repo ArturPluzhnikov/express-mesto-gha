@@ -9,6 +9,8 @@ const routerUsers = require('./routes/users');
 const routerCards = require('./routes/cards');
 const { login, createUser } = require('./controllers/users');
 const { auth } = require('./middlewares/auth');
+const NotFound = require('./errors/NotFound');
+const errorHandler = require('./errors/errorHandler');
 
 const { PORT = 3000 } = process.env;
 
@@ -17,14 +19,6 @@ const app = express();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
-// app.use((req, res, next) => {
-//   req.user = {
-//     _id: '62ec35ae7f15bbd973adaeea',
-//   };
-
-//   next();
-// });
 
 app.post('/signin', celebrate({
   body: Joi.object().keys({
@@ -45,7 +39,7 @@ app.post('/signup', celebrate({
       .min(2)
       .max(30),
     avatar: Joi.string()
-      .regex(/^https?:\/\/[a-z\d\-._~:/?#[\]@!$&'()*+,;=]+#?&/),
+      .regex(/^https?:\/\/[a-z\d\-._~:/?#[\]@!$&'()*+,;=]+#?&?/),
     email: Joi.string()
       .required()
       .email(),
@@ -54,16 +48,16 @@ app.post('/signup', celebrate({
   }),
 }), createUser);
 
-const logger = (req, res, next) => {
-  console.log('Запрос логирован.');
-  next();
-};
-
-app.use(logger);
+app.use(auth);
 app.use('/', routerUsers);
 app.use('/', routerCards);
-app.use(auth);
+
 app.use(errors());
+app.use(errorHandler);
+
+app.use((req, res, next) => {
+  next(new NotFound('Маршрут не найден'));
+});
 
 app.listen(PORT, () => {
   console.log(`Приложение слушает порт ${PORT}`);
