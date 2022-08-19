@@ -10,7 +10,7 @@ const routerCards = require('./routes/cards');
 const { login, createUser } = require('./controllers/users');
 const { auth } = require('./middlewares/auth');
 const NotFound = require('./errors/NotFound');
-const errorHandler = require('./errors/errorHandler');
+const { errorHandler } = require('./errors/errorHandler');
 
 const { PORT = 3000 } = process.env;
 
@@ -39,7 +39,8 @@ app.post('/signup', celebrate({
       .min(2)
       .max(30),
     avatar: Joi.string()
-      .regex(/^https?:\/\/[a-z\d\-._~:/?#[\]@!$&'()*+,;=]+#?&?/),
+      // eslint-disable-next-line no-useless-escape
+      .regex(/[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=-]{2,256}\.[a-z]{2,6}\b(?:[-a-zA-Z0-9@:%_\+.~#?&\/\/=]*)/),
     email: Joi.string()
       .required()
       .email(),
@@ -52,12 +53,12 @@ app.use(auth);
 app.use('/', routerUsers);
 app.use('/', routerCards);
 
-app.use(errors());
-app.use(errorHandler);
-
 app.use((req, res, next) => {
   next(new NotFound('Маршрут не найден'));
 });
+
+app.use(errors());
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`Приложение слушает порт ${PORT}`);
