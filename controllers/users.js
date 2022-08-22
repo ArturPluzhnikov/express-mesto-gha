@@ -14,7 +14,7 @@ module.exports.getAllUsers = (req, res, next) => {
 };
 
 module.exports.getUser = (req, res, next) => {
-  User.findById(req.params.id)
+  User.findById(req.params.userId)
     .then((user) => {
       if (!user) {
         throw new NotFound('По данному запросу пользователи не найдены');

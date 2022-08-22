@@ -17,6 +17,7 @@ router.post('/cards', celebrate({
       .max(30)
       .required(),
     link: Joi.string()
+      .required()
       .custom((value) => {
         if (!validator.isURL(value, { require_protocol: true })) {
           throw new BadRequest('Некорректный URL');
